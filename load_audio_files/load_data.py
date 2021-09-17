@@ -104,7 +104,6 @@ class load_data():
 
 if __name__ == '__main__':
     load_data = load_data()
-    labels, label_indices, cat_labels = load_data.get_labels(path=data_path)
-
-
-    pass
+    load_data.save_data_to_array(path=data_path, max_len=11)
+    data = load_data.prepare_dataset(path=data_path)
+    dataset = load_data.load_dataset(path=data_path)
