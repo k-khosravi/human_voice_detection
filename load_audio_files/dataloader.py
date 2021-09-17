@@ -1,6 +1,6 @@
 import librosa
 import os
-from config.config import data_path, max_len
+from config.config import data_path, data_vectors_path, max_len
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 import numpy as np
@@ -10,10 +10,11 @@ from tqdm import tqdm
 class DataLoader():
     def __init__(self):
         self.data_dir = data_path
+        self.data_vactors_dir = data_vectors_path
         self.max_len = max_len
+        self.labels = self.get_labels()
 
     def load_wave_dataset(self):
-        self.labels = self.get_labels()
         data = self.prepare_dataset()
         dataset = []
         for label in data:
@@ -63,14 +64,11 @@ class DataLoader():
         for wave_data in self.dataset:
             vectors.get(wave_data[0]).append(wave_data[1])
         for label in self.labels:
-            np.save(label + '.npy', vectors.get(label))
+            np.save(data_vectors_path+label + '.npy', vectors.get(label))
 
     def get_train_test(self, split_ratio=0.6, random_state=42):
-        # Get available labels
-        labels, indices, _ = self.get_labels(data_path)
-
         # Getting first arrays
-        X = np.load(labels[0] + '.npy')
+        X = np.load(self.labels[0] + '.npy')
         y = np.zeros(X.shape[0])
 
         # Append all of the dataset into one single array, same goes for y
