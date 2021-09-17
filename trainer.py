@@ -1,10 +1,7 @@
-# load data [.npy data]
-# preprocess
-# get model
-# train model
 import os
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics import classification_report
 from config.config import data_path, data_vectors_path
 from sklearn.model_selection import train_test_split
 from libs.models import get_model1
@@ -24,7 +21,7 @@ class Trainer(object):
         for i, label in enumerate(self.labels):
             x = np.load(self.data_vectors_dir + label + '.npy')
             x_list.append(x)
-            y = np.full(x.shape[0], fill_value=(i + 1))
+            y = np.full(x.shape[0], fill_value=(i))
             y_list.append(y)
         X = np.expand_dims(np.vstack(x_list), axis=3)
         y = self.one_hot_encoder.fit_transform(np.hstack(y_list).reshape(-1,1), )
@@ -38,5 +35,13 @@ if __name__ == '__main__':
     trainer.load_process_data()
     model = get_model1(in_shape=tuple(trainer.x_train.shape[1:]),
                        num_classes=trainer.y_train.shape.__len__())
-    model.fit(trainer.x_train, trainer.y_train, epochs=100, validation_split=0.2)
-    model.save('model.bin')
+    model.fit(trainer.x_train,
+              trainer.y_train,
+              batch_size=16,
+              epochs=200,
+              validation_split=0.2)
+    y_predict = np.argmax(model.predict(trainer.x_test), axis=1)
+    y_true = np.argmax(trainer.y_test, axis=1)
+
+    print(classification_report(y_true, y_predict))
+

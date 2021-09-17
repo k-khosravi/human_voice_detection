@@ -1,8 +1,6 @@
 import librosa
 import os
 from config.config import data_path, data_vectors_path, max_len
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.utils import to_categorical
 import numpy as np
 from tqdm import tqdm
 
@@ -20,7 +18,7 @@ class DataLoader():
         for label in data:
             for mfcc in data[label]['mfcc']:
                 dataset.append((label, mfcc))
-        self.dataset = dataset[:100]
+        self.dataset = dataset
         # return dataset[:100]
 
     def get_labels(self):
@@ -37,13 +35,16 @@ class DataLoader():
             vectors = []
 
             # load .wav file and convert to mfcc
-            for wavfile in data[label]['path']:
-                wave, sr = librosa.load(wavfile, mono=True, sr=None)
-                # Downsampling
-                wave = wave[::3]
-                # mfcc = librosa.feature.mfcc(wave, sr=16000)
-                mfcc = self.wav2mfcc(wave)
-                vectors.append(mfcc)
+            print(label)
+            with tqdm(total=len(data[label]['path'])) as prg:
+                for wavfile in data[label]['path']:
+                    wave, sr = librosa.load(wavfile, mono=True, sr=None)
+                    # Downsampling
+                    wave = wave[::3]
+                    # mfcc = librosa.feature.mfcc(wave, sr=16000)
+                    mfcc = self.wav2mfcc(wave)
+                    vectors.append(mfcc)
+                    prg.update()
             data[label]['mfcc'] = vectors
         return data
 
@@ -65,21 +66,6 @@ class DataLoader():
             vectors.get(wave_data[0]).append(wave_data[1])
         for label in self.labels:
             np.save(data_vectors_path+label + '.npy', vectors.get(label))
-
-    def get_train_test(self, split_ratio=0.6, random_state=42):
-        # Getting first arrays
-        X = np.load(self.labels[0] + '.npy')
-        y = np.zeros(X.shape[0])
-
-        # Append all of the dataset into one single array, same goes for y
-        for i, label in enumerate(labels[1:]):
-            x = np.load(label + '.npy')
-            X = np.vstack((X, x))
-            y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
-
-        assert X.shape[0] == len(y)
-        return train_test_split(X, y, test_size=(1 - split_ratio), random_state=random_state, shuffle=True)
-
 
 # if you run this file all audio files in /data/ dir load-process-convert to mfcc-save as .npy files
 if __name__ == '__main__':
