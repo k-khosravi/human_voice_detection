@@ -37,7 +37,7 @@ class load_data():
 
 
     def save_data_to_array(self, path=data_path, max_len=11):
-        labels, _, _ = get_labels(path)
+        labels, _, _ = self.get_labels(path)
 
         for label in labels:
             # Init mfcc vectors
@@ -45,13 +45,13 @@ class load_data():
 
             wavfiles = [path + label + '/' + wavfile for wavfile in os.listdir(path + '/' + label)]
             for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
-                mfcc = wav2mfcc(wavfile, max_len=max_len)
+                mfcc = self.wav2mfcc(wavfile, max_len=max_len)
                 mfcc_vectors.append(mfcc)
             np.save(label + '.npy', mfcc_vectors)
 
     def get_train_test(self, split_ratio=0.6, random_state=42):
         # Get available labels
-        labels, indices, _ = get_labels(data_path)
+        labels, indices, _ = self.get_labels(data_path)
 
         # Getting first arrays
         X = np.load(labels[0] + '.npy')
@@ -70,7 +70,7 @@ class load_data():
 
 
     def prepare_dataset(self, path=data_path):
-        labels, _, _ = get_labels(path)
+        labels, _, _ = self.get_labels(path)
         data = {}
         for label in labels:
             data[label] = {}
@@ -91,7 +91,7 @@ class load_data():
 
 
     def load_dataset(self, path=data_path):
-        data = prepare_dataset(path)
+        data = self.prepare_dataset(path)
 
         dataset = []
 
@@ -102,4 +102,9 @@ class load_data():
         return dataset[:100]
 
 
-    # print(prepare_dataset(DATA_PATH))
+if __name__ == '__main__':
+    load_data = load_data()
+    labels, label_indices, cat_labels = load_data.get_labels(path=data_path)
+
+
+    pass
