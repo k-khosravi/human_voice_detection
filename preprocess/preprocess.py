@@ -1,15 +1,14 @@
-
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-from load_audio_files.load_data import load_data
+from load_audio_files.dataloader import DataLoader
 from tensorflow.keras.utils import to_categorical
 
 # Second dimension of the feature is dim2
-feature_dim_2 = 11
+feature_dim_2 = 50
 
 # Save data to array file first
-load_data = load_data()
+load_data = DataLoader()
 load_data.save_data_to_array(max_len=feature_dim_2)
 
 # # Loading train set and test set
